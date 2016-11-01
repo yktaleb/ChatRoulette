@@ -20,13 +20,14 @@ public class ChatServer {
 
     @OnOpen
     public void open(Session session) {
-        sessionHandler.addSession(session);
-        sessionHandler.addToDialogs();
+        sessionHandler.addSessionToQueue(session);
+        sessionHandler.createDialogue();
     }
 
     @OnClose
     public void close(Session session) {
-        sessionHandler.removeSession(session);
+        sessionHandler.removeSessionFromQueue(session);
+        sessionHandler.removeSessionFromDialogues(session);
     }
 
     @OnError
@@ -37,7 +38,7 @@ public class ChatServer {
     @OnMessage
     public void handleMessage(Session session, String message) {
         if (message.equals("next")) {
-
+            sessionHandler.nextInterlocutor(session);
         } else {
             JsonReader reader = Json.createReader(new StringReader(message));
             JsonObject jsonMessage = reader.readObject();

@@ -16,17 +16,17 @@ public class UserSessionHandler {
 
     private Queue<Session> queueFreeUsers = new LinkedList<Session>();
 
-    private HashMap<Long, Session[]> dialogs = new HashMap<Long, Session[]>();
+    private HashMap<Long, Session[]> dialogues = new HashMap<Long, Session[]>();
 
-    public void addSession(Session session) {
+    public void addSessionToQueue(Session session) {
         queueFreeUsers.add(session);
     }
 
-    public void removeSession(Session session) {
+    public void removeSessionFromQueue(Session session) {
         queueFreeUsers.remove(session);
     }
 
-    public void addToDialogs() {
+    public void createDialogue() {
         if (queueFreeUsers.size() != 1) {
             Session[] newDialog = new Session[2];
             while (queueFreeUsers.size() != 1) {
@@ -37,8 +37,38 @@ public class UserSessionHandler {
                 secondInterlocutor.getUserProperties().put("room", room);
                 newDialog[0] = firstInterlocutor;
                 newDialog[1] = secondInterlocutor;
-                dialogs.put(room, newDialog);
+                dialogues.put(room, newDialog);
             }
+        } else {
+            try {
+                queueFreeUsers.element().getBasicRemote().sendText("NoFreeCompanion");
+            } catch (IOException e) {
+                System.out.println("Error");
+            }
+        }
+    }
+
+    public void removeSessionFromDialogues(Session session) {
+        Long room = (Long) session.getUserProperties().get("room");
+        Session[] sessionsOfDialogue = dialogues.get(room);
+        if (sessionsOfDialogue != null) {
+            dialogues.remove(room);
+            if (!sessionsOfDialogue[0].equals(session)) {
+                queueFreeUsers.add(sessionsOfDialogue[0]);
+            } else {
+                queueFreeUsers.add(sessionsOfDialogue[1]);
+            }
+        }
+    }
+
+    public void nextInterlocutor(Session session) {
+        Long room = (Long) session.getUserProperties().get("room");
+        Session[] sessionsOfDialogue = dialogues.get(room);
+        if (sessionsOfDialogue != null) {
+            dialogues.remove(room);
+            queueFreeUsers.add(sessionsOfDialogue[0]);
+            queueFreeUsers.add(sessionsOfDialogue[1]);
+            createDialogue();
         }
     }
 
@@ -49,7 +79,7 @@ public class UserSessionHandler {
                 .add(Message.JSON_NAME_CONTENT, message.getContent())
                 .build();
         Long room = (Long) session.getUserProperties().get("room");
-        Session[] sessionsInterlocutors = dialogs.get(Long.valueOf(room));
+        Session[] sessionsInterlocutors = dialogues.get(Long.valueOf(room));
         for (Session s : sessionsInterlocutors) {
             if (s.isOpen()){
                 sendToSession(s, jsonMessage);

@@ -6,9 +6,13 @@ var serviceLocation = "ws://localhost:8080/ChatRoulette_war_exploded/chat";
 var socket;
 
 function receiveMessage(event) {
-    //переводим JSON-строку в js-строку
-    var message = JSON.parse(event.data);
-    addNewMessageToWindow(message);
+    // clearWindow();
+    if (event.data == "NoFreeCompanion") {
+        messageNoFreeCompanion();
+    } else {
+        var message = JSON.parse(event.data);
+        addNewMessageToWindow(message);
+    }
 }
 
 //обработчик на кнопке сменить собеседника
@@ -39,6 +43,17 @@ function addNewMessageToWindow(message) {
     messageLine.innerHTML = "<b>" + message.nickname + ": </b>" + message.content;
     messagesArea.appendChild(messageLine);
 }
+
+function messageNoFreeCompanion() {
+    var messagesArea = document.getElementById("messages");
+    var messageLine = document.createElement("h1");
+    messageLine.innerHTML = "<b>" + "No free companion :(" +"</b>";
+    messagesArea.appendChild(messageLine);
+}
+
+// function clearWindow() {
+ //     document.getElementById("messages").clearAttributes();
+ // }
 
 function initialization() {
     nickname = prompt("Please enter your nickname", nickname);
