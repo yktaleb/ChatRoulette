@@ -14,7 +14,7 @@ public class UserSessionHandler {
 
     private static Long room = 0L;
 
-    private Queue<Session> queueFreeUsers = new LinkedList<Session>();
+    private List<Session> queueFreeUsers = new ArrayList<Session>();
 
     private HashMap<Long, Session[]> dialogues = new HashMap<Long, Session[]>();
 
@@ -27,12 +27,16 @@ public class UserSessionHandler {
     }
 
     public void createDialogue() {
-        if (queueFreeUsers.size() != 1) {
+        if (queueFreeUsers.size() == 3) {
+            createDialogueSecondary();
+        } else if (queueFreeUsers.size() > 1) {
             Session[] newDialog = new Session[2];
-            while (queueFreeUsers.size() != 1) {
+            while (queueFreeUsers.size() > 1) {
                 room++;
-                Session firstInterlocutor = queueFreeUsers.poll();
-                Session secondInterlocutor = queueFreeUsers.poll();
+                Session firstInterlocutor = queueFreeUsers.get(0);
+                queueFreeUsers.remove(0);
+                Session secondInterlocutor = queueFreeUsers.get(0);
+                queueFreeUsers.remove(0);
                 firstInterlocutor.getUserProperties().put("room", room);
                 secondInterlocutor.getUserProperties().put("room", room);
                 newDialog[0] = firstInterlocutor;
@@ -41,7 +45,41 @@ public class UserSessionHandler {
             }
         } else {
             try {
-                queueFreeUsers.element().getBasicRemote().sendText("NoFreeCompanion");
+                if (queueFreeUsers.get(0).isOpen()) {
+                    queueFreeUsers.get(0).getBasicRemote().sendText("NoFreeCompanion");
+                }
+            } catch (IOException e) {
+                System.out.println("Error");
+            }
+        }
+    }
+
+    public void createDialogueSecondary() {
+        if (queueFreeUsers.size() > 2) {
+            Session[] newDialog = new Session[2];
+            while (queueFreeUsers.size() > 1) {
+                if (queueFreeUsers.size() == 2) {
+                    createDialogue();
+                } else {
+                    room++;
+                    Session firstInterlocutor = queueFreeUsers.get(0);
+                    queueFreeUsers.remove(0);
+                    Session secondInterlocutor = queueFreeUsers.get(1);
+                    queueFreeUsers.remove(1);
+                    firstInterlocutor.getUserProperties().put("room", room);
+                    secondInterlocutor.getUserProperties().put("room", room);
+                    newDialog[0] = firstInterlocutor;
+                    newDialog[1] = secondInterlocutor;
+                    dialogues.put(room, newDialog);
+                }
+            }
+        } else {
+            try {
+                for (Session user : queueFreeUsers) {
+                    if (user.isOpen()) {
+                        user.getBasicRemote().sendText("NoFreeCompanion");
+                    }
+                }
             } catch (IOException e) {
                 System.out.println("Error");
             }
@@ -59,6 +97,7 @@ public class UserSessionHandler {
                 queueFreeUsers.add(sessionsOfDialogue[1]);
             }
         }
+        createDialogue();
     }
 
     public void nextInterlocutor(Session session) {
@@ -68,7 +107,7 @@ public class UserSessionHandler {
             dialogues.remove(room);
             queueFreeUsers.add(sessionsOfDialogue[0]);
             queueFreeUsers.add(sessionsOfDialogue[1]);
-            createDialogue();
+            createDialogueSecondary();
         }
     }
 

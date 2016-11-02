@@ -3,11 +3,21 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Queue<Integer> set = new LinkedList<Integer>();
+//        Queue<Integer> set = new LinkedList<Integer>();
+//        set.add(1);
+//        set.add(2);
+//        set.add(3);
+//        set.add(4);
+
+        List<Integer> set = new ArrayList<Integer>();
         set.add(1);
         set.add(2);
         set.add(3);
         set.add(4);
+
+        System.out.println(set.get(0));
+        set.remove(0);
+        System.out.println(set.get(0));
 
 //
 //        set.remove(2);
@@ -42,6 +52,29 @@ public class Main {
 //
 //        System.out.println(Arrays.toString(dialogs.get(3L)));
 
+
+//        List<String> list1 = new ArrayList<String>();
+//        List<String> list2 = new LinkedList<String>();
+//// Заполнение коллекций
+//// попробуйте 10, 100, 1000, 10000, 100000
+//        for (int i=0; i<100; i++) {
+//            list1.add("" + i);
+//            list2.add("" + i);
+//        }
+//// Random access test
+//        long t0=System.nanoTime(); // get list1
+//        for (int i=0; i<list1.size(); i++) {
+//            list1.remove(i);
+//        }
+//        long t1=System.nanoTime(); // get list2
+//        for (int i=0; i<list2.size(); i++) {
+//            list2.remove(i);
+//        }
+//        long t2=System.nanoTime();
+//// Результаты
+//        System.out.println("RandomAccess :" + (list1 instanceof RandomAccess) + " "
+//                + (list2 instanceof RandomAccess));
+//        System.out.println("get(i) :" + (t1-t0) + " " + (t2-t1));
 
 
     }
